@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Trapper"
+        Icon="{StaticResource IconResource}"
         mc:Ignorable="d"
         Name="Trapper"
         MouseDown="Trapper_MouseDown"
@@ -21,7 +22,7 @@
         <ContextMenu>
             <MenuItem IsCheckable="True" IsChecked="False" Header="Show Title Bar" Click="TitleBar_Click"/>
             <MenuItem IsCheckable="True" IsChecked="False" Header="Pin to Top" Click="pinMenu_Click"/>
-            <MenuItem Name="AppSwitcher" IsCheckable="True" IsChecked="False" Header="Visible in Application Switcher" Click="AppSwitcher_Click"/>
+            <MenuItem Name="AppSwitcher" IsCheckable="True" IsChecked="True" Header="Visible in Application Switcher" Click="AppSwitcher_Click"/>
             <MenuItem Header="Exit" Click="ExitMenu_Click"/>
         </ContextMenu>
     </Window.ContextMenu>

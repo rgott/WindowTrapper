@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:Trapper"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <BitmapImage x:Key="IconResource" UriSource="./Image.png" />
     </Application.Resources>
 </Application>

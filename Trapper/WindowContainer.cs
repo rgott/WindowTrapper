@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace Trapper
 {
@@ -10,11 +11,7 @@ namespace Trapper
 
         public IntPtr mainWindowHandle;
         public Win32.Rect mainWindowRect;
-        public Win32.WinDocPos windowDockLocation;
-        public WindowContainer(IntPtr mainWindow, IntPtr windowHandle, Win32.WinDocPos windowDockLocation) : this(mainWindow, windowHandle)
-        {
-            this.windowDockLocation = windowDockLocation;
-        }
+
         public WindowContainer(IntPtr mainWindow, IntPtr windowHandle)
         {
             this.childWindowHandle = windowHandle;
@@ -27,7 +24,9 @@ namespace Trapper
             offset.X = childWindowRect.Left - mainWindowRect.Left;
             offset.Y = childWindowRect.Top - mainWindowRect.Top;
         }
-        public void setWindow()
+
+
+        public void setWindow(Win32.WinDocPos windowDockLocation = Win32.WinDocPos.main)
         {
             Win32.Rect main = new Win32.Rect();
             Win32.GetWindowRect(mainWindowHandle, ref main);
@@ -81,6 +80,13 @@ namespace Trapper
                         break;
                 }
 
+                // Update
+                childWindowRect.Top = WTop;
+                childWindowRect.Left = WLeft;
+                offset.X = 0;
+                offset.Y = 0;
+
+                Thread.Sleep(100);
                 Win32.SetWindowPos(
                         childWindowHandle,
                         Win32.HWND_TOPMOST,

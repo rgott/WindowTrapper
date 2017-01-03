@@ -1,16 +1,17 @@
 ﻿using Gma.System.MouseKeyHook;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Windows;
-using Forms = System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Controls;
+using System.Threading.Tasks;
+using Forms = System.Windows.Forms;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Windows.Media;
+using System.Diagnostics;
 
 namespace Trapper
 {
@@ -25,9 +26,9 @@ namespace Trapper
         // TODO: improve proformance by not polling mouse
         // TODO: add movement event to title bar
         #region Keyboard and Mouse Hooks
-
+        
         private IKeyboardMouseEvents m_GlobalHook;
-        public void Subscribe()
+        private void Subscribe()
         {
             // Note: for the application hook, use the Hook.AppEvents() instead
             m_GlobalHook = Hook.GlobalEvents();
@@ -41,7 +42,7 @@ namespace Trapper
             if ((posHolder = isInWindow(e)) != Win32.WinDocPos.outOfWindow)
             {
                 if (current != windowPtr) // and not this(MainWindow) window
-                    AddWindow(new WindowContainer(windowPtr, current, posHolder));// add to list
+                    AddWindow(new WindowContainer(windowPtr, current), posHolder);// add to list
             }
             else
             {
@@ -108,8 +109,9 @@ namespace Trapper
         IntPtr windowPtr;
         List<Window> allWindows = new List<Window>();
         List<WindowContainer> window = new List<WindowContainer>();
+
         #region extentions to WindowContainerList
-        private void AddWindow(WindowContainer win)
+        private void AddWindow(WindowContainer win,Win32.WinDocPos windowDockLocation)
         {
             int index;
             if ((index = window.IndexOf(win)) == -1)
@@ -120,7 +122,7 @@ namespace Trapper
             }
             else
             {
-                switch (win.windowDockLocation)
+                switch (windowDockLocation)
                 {
                     case Win32.WinDocPos.main:
                         window[index].offset = win.offset; // reset offset if tried to add again
@@ -133,7 +135,7 @@ namespace Trapper
                     case Win32.WinDocPos.Bottom:
                     case Win32.WinDocPos.BottomLeft:
                     case Win32.WinDocPos.Left:
-                        window[index].setWindow();
+                        window[index].setWindow(windowDockLocation);
                         break;
                 }
             }
@@ -143,12 +145,11 @@ namespace Trapper
             int index;
             if((index = window.IndexOf(win)) != -1)
             {
-                //if(!Properties.Settings.Default.TabSwitchVisible)
-                //{
+                if (!Properties.Settings.Default.TabSwitchVisible)
+                {
                     win.setTabSwitchVisible(true);
                     window[index].setTabSwitchVisible(true);
-
-                //}
+                }
                 window.RemoveAt(index);
             }
         }
@@ -193,11 +194,11 @@ namespace Trapper
         {
             if (window != null && Mouse.LeftButton == MouseButtonState.Pressed)
             {
-                new Thread(() =>
+                Task.Factory.StartNew(() =>
                 {
                     foreach (WindowContainer win in window)
                         win.setWindow();
-                }).Start();
+                });
             }
         }
 
@@ -208,6 +209,7 @@ namespace Trapper
 
         private void Trapper_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            Unsubscribe();
             if (Properties.Settings.Default.TabSwitchVisible)
             {
                 foreach (WindowContainer item in window)
@@ -221,9 +223,6 @@ namespace Trapper
                 foreach (WindowContainer item in window)
                     item.resetWindow();
             }
-
-            
-            Unsubscribe();
         }
 
         private void Trapper_StateChanged(object sender, EventArgs e)
@@ -232,21 +231,21 @@ namespace Trapper
             {
                 case WindowState.Normal:
                 case WindowState.Maximized:
-                    new Thread(() => {
+                    Task.Factory.StartNew(() => {
                         foreach (WindowContainer item in window)
                         {
                             item.showWindow();
                         }
-                    }).Start();
+                    });
                     break;
                 case WindowState.Minimized:
-                    new Thread(() => {
+                    Task.Factory.StartNew(() => {
                         foreach (WindowContainer item in window)
                         {
                             item.setMinimizeWindow();
                             item.resetWindow();
                         }
-                    }).Start();
+                    });
                     break;
             }
         }
@@ -263,12 +262,11 @@ namespace Trapper
         {
             if (window != null && Mouse.LeftButton == MouseButtonState.Pressed)
             {
-                new Thread(() => {
+                Task.Factory.StartNew(() => {
                     foreach (WindowContainer win in window)
                         win.setWindow();
-                }).Start();
+                });
             }
-            // TODO Validation and auto resizing of inner windows
         }
 
         private void TitleBar_Click(object sender, RoutedEventArgs e)
@@ -285,25 +283,16 @@ namespace Trapper
 
         private void pinMenu_Click(object sender, RoutedEventArgs e)
         {
-            if (((MenuItem)sender).IsChecked)
-            {
-                this.Topmost = true;
-            }
-            else
-            {
-                this.Topmost = false;
-            }
+            this.Topmost = ((MenuItem)sender).IsChecked;
         }
 
         private void AppSwitcher_Click(object sender, RoutedEventArgs e)
         {
             Properties.Settings.Default.TabSwitchVisible = ((MenuItem)sender).IsChecked;
             Properties.Settings.Default.Save();
-
+            
             foreach (WindowContainer item in window)
-            {
                 item.setTabSwitchVisible(Properties.Settings.Default.TabSwitchVisible);
-            }
         }
     }
 }
