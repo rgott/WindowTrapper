@@ -1,17 +1,12 @@
 ﻿using Gma.System.MouseKeyHook;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Controls;
 using System.Threading.Tasks;
 using Forms = System.Windows.Forms;
-using System.Management;
-using System.Runtime.InteropServices;
-using System.Windows.Media;
-using System.Diagnostics;
 
 namespace Trapper
 {
@@ -20,11 +15,24 @@ namespace Trapper
     /// </summary>
     public partial class MainWindow : Window
     {
-        // TODO: Add background color / image
-        // TODO: Add icon file change
-        // TODO: Add settings
         // TODO: improve proformance by not polling mouse
         // TODO: add movement event to title bar
+        public MainWindow()
+        {
+            InitializeComponent();
+            
+            Trapper.Background = SystemColors.HotTrackBrush;
+
+            AppSwitcher.IsChecked = Properties.Settings.Default.TabSwitchVisible;
+            Subscribe(); // get all global key events sent to program
+            bool slower = true;
+            if(slower)
+            { // load additional methods
+                this.LocationChanged += Trapper_LocationChanged;
+            }
+        }
+
+
         #region Keyboard and Mouse Hooks
         
         private IKeyboardMouseEvents m_GlobalHook;
@@ -148,7 +156,6 @@ namespace Trapper
                 if (!Properties.Settings.Default.TabSwitchVisible)
                 {
                     win.setTabSwitchVisible(true);
-                    window[index].setTabSwitchVisible(true);
                 }
                 window.RemoveAt(index);
             }
@@ -156,20 +163,6 @@ namespace Trapper
         #endregion
 
 
-        public MainWindow()
-        {
-            InitializeComponent();
-            
-            Trapper.Background = SystemColors.HotTrackBrush;
-
-            AppSwitcher.IsChecked = Properties.Settings.Default.TabSwitchVisible;
-            Subscribe(); // get all global key events sent to program
-            bool slower = true;
-            if(slower)
-            { // load additional methods
-                this.LocationChanged += Trapper_LocationChanged;
-            }
-        }
         
         private void Trapper_MouseDown(object sender, MouseButtonEventArgs e)
         {
@@ -184,10 +177,11 @@ namespace Trapper
 
         private void Trapper_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            foreach (WindowContainer item in window)
+            Task.Factory.StartNew(() =>
             {
-                item.setWindow();
-            }
+                foreach (WindowContainer item in window)
+                    item.setWindow();
+            });
         }
 
         private void Trapper_LocationChanged(object sender, EventArgs e)
@@ -271,6 +265,9 @@ namespace Trapper
 
         private void TitleBar_Click(object sender, RoutedEventArgs e)
         {
+            Properties.Settings.Default.windowStyle = ((MenuItem)sender).IsChecked;
+            Properties.Settings.Default.Save();
+
             if (((MenuItem)sender).IsChecked)
             {
                 this.WindowStyle = WindowStyle.SingleBorderWindow;
@@ -283,6 +280,9 @@ namespace Trapper
 
         private void pinMenu_Click(object sender, RoutedEventArgs e)
         {
+            Properties.Settings.Default.TopMost = ((MenuItem)sender).IsChecked;
+            Properties.Settings.Default.Save();
+
             this.Topmost = ((MenuItem)sender).IsChecked;
         }
 
