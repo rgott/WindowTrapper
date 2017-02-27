@@ -1,0 +1,32 @@
+﻿<Window x:Class="Trapper.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Trapper"
+        Icon="{StaticResource IconResource}"
+        mc:Ignorable="d"
+        Name="Trapper"
+        MouseDown="Trapper_MouseDown"
+        Loaded="Trapper_Loaded"
+        Closing="Trapper_Closing"
+        Activated="Trapper_Activated"
+        StateChanged="Trapper_StateChanged"
+        SizeChanged="Trapper_SizeChanged"
+        MouseUp="Trapper_MouseUp"
+        ResizeMode="CanResize"
+        
+        WindowStyle="None"
+        Title="" Height="350" Width="525">
+    <Window.ContextMenu>
+        <ContextMenu>
+            <MenuItem IsCheckable="True" IsChecked="False" Header="Show Title Bar" Click="TitleBar_Click"/>
+            <MenuItem IsCheckable="True" IsChecked="False" Header="Pin to Top" Click="pinMenu_Click"/>
+            <MenuItem Name="AppSwitcher" IsCheckable="True" IsChecked="True" Header="Visible in Application Switcher" Click="AppSwitcher_Click"/>
+            <MenuItem Header="Exit" Click="ExitMenu_Click"/>
+        </ContextMenu>
+    </Window.ContextMenu>
+    <Grid Margin="10">
+        <!--add background / background image here TODO:-->
+    </Grid>
+</Window>
