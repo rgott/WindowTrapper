@@ -15,7 +15,7 @@ namespace Trapper
     /// </summary>
     public partial class MainWindow : Window
     {
-        // TODO: improve proformance by not polling mouse
+        // TODO: improve performance by not polling mouse
         // TODO: add movement event to title bar
         public MainWindow()
         {
